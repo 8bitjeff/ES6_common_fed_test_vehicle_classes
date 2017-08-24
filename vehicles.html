@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>Vehicles</title>
+    
+    <script   src="https://code.jquery.com/jquery-2.2.4.min.js"   integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="   crossorigin="anonymous"></script>
+    
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+
+    <!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+
+    <!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+    
+</head>
+    
+    <style>
+        
+        .addedHolder{
+            border-width: 1px;
+            border-style:solid;
+            border-color:#00f;
+            
+        }
+        
+        .info{
+            text-decoration:underline;
+            font-weight: bold;
+        }
+        
+        .info:hover {
+            cursor:pointer;
+        }
+        
+        .text-center{
+            
+            text-align:center;
+        }
+        
+         .text-left{
+            
+            text-align:left;
+        }
+    
+    </style>
+    
+    
+<body>
+    <div class="container" >
+        <h1 class="text-center">Vehicles</h1>
+        <div class="row text-center">
+        
+            <section class="col-md-6">
+                <h2>Add Vehicle</h2>
+                
+                <div id="vehicle-form">
+                
+                    <form role="form">
+                        <div class="form-group">
+                             <label for="name" class="sr-only">Name</label>
+                             <input type="text" id="vehicle-name" class="form-control" placeholder="Name" required autofocus>
+                        </div>
+                        
+                        <div class="form-group">
+                             <select class="form-control" id="vehicle-type" required autofocus>
+                                     <option value="" selected disabled>Type</option>
+                             </select>
+                            
+                        
+                        </div>
+                        
+                         <button class="btn btn-lg btn-primary btn-block">Create</button>
+                    
+                    </form>
+                    
+                </div>
+                
+                
+            </section>
+            
+            <section class="col-md-6">
+                <h2>Added Vehicles</h2>
+                <div class="addedHolder">
+                     <ul id="added-vehicles">
+                    
+                
+                     </ul>
+                </div>
+               
+                
+            </section>
+        
+        </div>
+    </div>
+    
+<script>
+    
+   
+    
+    
+    class Vehicle{
+        
+        constructor(){
+            this.name='';
+            this._wheels=0;
+            this._seats=0;
+        }
+        
+        getName(){
+            
+            return this.name;
+        }
+        
+        setName(name) {
+            this.name=name;
+            
+        }
+        
+    
+        get seats(){
+            return this._seats;
+        }
+        
+        set seats(seats){
+            this._seats=seats;
+        }
+        
+        get wheels(){
+            return this._wheels;
+        }
+        
+        set wheels(wheels){
+            this._wheels=wheels;
+        }
+        
+        
+        
+    }
+    
+    class Car extends Vehicle{
+        constructor(){
+            super();
+            this.seats=2;
+            this.wheels=4;
+        }
+    }
+    this.Car=Car;
+    
+    class Motorcycle extends Vehicle {
+        constructor(){
+            super();
+            this.seats=1;
+            this.wheels=2;
+        }
+        
+    }
+    this.Motorcycle=Motorcycle;
+   
+    
+    //export classes to global scope so they can be dynamically generated based on name in page module
+    //blech, but needed in ES6 for dynmic class instantiation. Scope pollution - ahh
+    
+   
+    
+    
+    //page module
+    var $scope=(function (global,$) {
+        
+        //set basic types from inherited vehicles types
+        var createdListModel=[];
+       
+        function addVehicleTypesToSelectBox(vehicleTypes){
+            $.each(vehicleTypes, function (i, item) {
+                $('#vehicle-type').append($('<option/>', { 
+                    value: item.constructor.name,
+                    text : item.constructor.name 
+                }));
+            });
+            
+        }
+
+        function addVehicleToList() {
+            var name=$("#vehicle-name").val();
+            var type=$("#vehicle-type").val();
+            
+            console.log(name, type);
+            var tempClass=new global[type]();
+            tempClass.setName(name);
+            
+             
+             createdListModel.push(tempClass);
+             addToVehicleList(createdListModel.length-1)
+        }
+        
+        displayInfo=function(id){
+            tempVehicle=createdListModel[id];
+          
+            
+            var output="I am " + tempVehicle.getName() + ", a " + tempVehicle.constructor.name + " with " + tempVehicle.wheels + " wheels and " + tempVehicle.seats + " seat(s).";
+            
+            
+            console.log(output)
+            
+        }
+        
+        function addToVehicleList(id) {
+            
+            var vehicle=createdListModel[id];
+            
+            var appendString="<li class='text-left'>"+vehicle.getName()+" <span class='info' onClick='displayInfo("+id+")'>(Info)</li>";
+            
+            $('#added-vehicles').append(appendString);
+        }
+        
+        
+        //events
+         $('#vehicle-form').submit(function () {
+            addVehicleToList();
+            return false;
+        });    
+        
+        
+        //run app
+        addVehicleTypesToSelectBox([new Car(), new Motorcycle()]);
+        
+        
+        //return public functions to external scope
+        return(displayInfo)
+       
+    }(this, $));
+    
+   
+   
+    
+    
+</script>    
+</body>
+</html>
